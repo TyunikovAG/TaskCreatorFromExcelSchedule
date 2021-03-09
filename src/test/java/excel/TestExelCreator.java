@@ -1,18 +1,22 @@
 package excel;
 
-import new_schedule.*;
+import ru.tyunikovag.schedule.*;
+import ru.tyunikovag.schedule.model.Shift;
+import ru.tyunikovag.schedule.model.TeamTask;
+import ru.tyunikovag.schedule.model.Team;
+import ru.tyunikovag.schedule.model.Worker;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class TestExelCreator {
 
-    static TaskBlank testerForTaskBlank;
+    static TeamTask testerForTeamTask;
 
     public static void main(String[] args) {
 
         initTesterBlank();
-        new ExelCreator().createTaskBlank(testerForTaskBlank, "бланк.xlsx");
+        new ExelCreator().createTaskBlank(testerForTeamTask, "бланк.xlsx");
     }
 
     private static void initTesterBlank() {
@@ -23,7 +27,7 @@ public class TestExelCreator {
         team.setMembers(workers);
         ArrayList<Team> teams = new ArrayList<>();
         teams.add(team);
-        testerForTaskBlank = new TaskBlank(LocalDate.now(), Shift.EVENING);
-        testerForTaskBlank.setTeams(teams);
+        testerForTeamTask = new TeamTask(LocalDate.now(), Shift.EVENING);
+        testerForTeamTask.setTeams(teams);
     }
 }

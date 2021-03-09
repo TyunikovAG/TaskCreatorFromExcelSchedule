@@ -1,24 +1,24 @@
-package new_schedule;
+package ru.tyunikovag.schedule.model;
 
 import java.time.LocalDate;
 import java.util.List;
 
-public class TaskBlank {
+public class TeamTask {
 
     private final LocalDate data;
     private final Shift shift;
     private List<Team> teams;
-    private String auhtor;
+    private String author;
 
-    public TaskBlank(LocalDate data, Shift shift) {
+    public TeamTask(LocalDate data, Shift shift) {
         this.data = data;
         this.shift = shift;
-        auhtor = "Семёнов И.П.";
+        author = "Семёнов И.П.";
     }
 
-    public TaskBlank(LocalDate data, Shift shift, String auhtor) {
+    public TeamTask(LocalDate data, Shift shift, String author) {
         this(data, shift);
-        this.auhtor = auhtor;
+        this.author = author;
     }
 
     public void setTeams(List<Team> teams) {
@@ -33,8 +33,8 @@ public class TaskBlank {
         return shift;
     }
 
-    public String getAuhtor() {
-        return auhtor;
+    public String getAuthor() {
+        return author;
     }
 
     public List<Team> getTeams() {

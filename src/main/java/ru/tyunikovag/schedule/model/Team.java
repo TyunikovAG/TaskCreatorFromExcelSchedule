@@ -1,17 +1,18 @@
-package new_schedule;
+package ru.tyunikovag.schedule.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Team {
+
+    private String teamNumber;
+    private List<Worker> members;
+    private String task;
 
     public Team(String teamNumber, String task) {
         this.teamNumber = teamNumber;
         this.task = task;
     }
-
-    private String teamNumber;
-    private ArrayList<Worker> members;
-    private String task;
 
     public void setMembers(ArrayList<Worker> members) {
         this.members = members;
@@ -21,7 +22,7 @@ public class Team {
         return teamNumber;
     }
 
-    public ArrayList<Worker> getMembers() {
+    public List<Worker> getMembers() {
         return members;
     }
 

@@ -1,7 +1,9 @@
-package new_schedule;
+package ru.tyunikovag.schedule.providers;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import ru.tyunikovag.schedule.model.Shift;
+import ru.tyunikovag.schedule.model.Worker;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,15 +62,20 @@ public class ExelProvider {
     }
 
     private void fillEmployeeWorkSchedule() {
-        for (int i = cornerRow + 7; i < sheet.getLastRowNum(); i++) {
-//            Cell cell = null;
-            Cell cell = sheet.getRow(i).getCell(cornerColumn);
-            if (cell != null) {
-                if (sheet.getRow(i).getCell(cornerColumn).getCellType() == CellType.STRING) {
-                    String fioString = cell.getStringCellValue();
-                    Worker worker = new Worker(getFIO(fioString), getProffesion(fioString));
-                    scheduleOfAllWorkers.put(worker, fillOneLine(cell.getRowIndex(), worker.fio));
+        int lastRow = sheet.getLastRowNum();
+        for (int i = cornerRow + 7; i < lastRow; i++) {
+            Row row = sheet.getRow(i);
+            if (row != null) {
+                Cell cell = sheet.getRow(i).getCell(cornerColumn);
+                if (cell != null) {
+                    if (sheet.getRow(i).getCell(cornerColumn).getCellType() == CellType.STRING) {
+                        String fioString = cell.getStringCellValue();
+                        Worker worker = new Worker(getFIO(fioString), getProffesion(fioString));
+                        scheduleOfAllWorkers.put(worker, fillOneLine(cell.getRowIndex(), worker.getFio()));
+                    }
                 }
+            } else {
+                break;
             }
         }
     }

@@ -1,4 +1,4 @@
-package new_schedule;
+package ru.tyunikovag.schedule.providers;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -94,7 +94,7 @@ public class PropertyProvider {
         return properties.getProperty(PropertyName.SCHEDULE_FILE_NAME.toString());
     }
 
-    void setFileForProperty(PropertyName key) {
+    public void setFileForProperty(PropertyName key) {
         String rootFolder = properties.getProperty(PropertyName.LAST_FOLDER.toString());
         if (rootFolder == null) {
             rootFolder = FileSystemView.getFileSystemView().getHomeDirectory().getAbsolutePath();

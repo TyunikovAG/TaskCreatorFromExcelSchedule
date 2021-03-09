@@ -6,11 +6,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane prefHeight="600" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="new_schedule.NewMainController">
+<BorderPane prefHeight="600" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.tyunikovag.schedule.controller.TaskController">
    <left>
       <VBox fx:id="leftBox" minWidth="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
-            <Label prefHeight="40.0" prefWidth="309.0" text="Сотрудник №1">
+            <Label prefHeight="40.0" prefWidth="309.0" text="Сотрудники">
                <VBox.margin>
                   <Insets bottom="10.0" right="10.0" top="10.0" />
                </VBox.margin>
@@ -29,7 +29,7 @@
          <children>
             <HBox alignment="CENTER">
                <children>
-                  <Button fx:id="btnAddSection" mnemonicParsing="false" onAction="#onButtonAddScetionAction" prefHeight="40.0" prefWidth="320.0" text="Добавить звено">
+                  <Button fx:id="btnAddSection" mnemonicParsing="false" onAction="#onButtonAddSectionAction" prefHeight="40.0" prefWidth="320.0" text="Добавить звено">
                      <font>
                         <Font size="14.0" />
                      </font>
@@ -70,24 +70,6 @@
       </VBox>
    </right>
    <bottom>
-      <GridPane>
-        <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="507.0" minWidth="10.0" prefWidth="507.0" />
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="533.0" minWidth="10.0" prefWidth="258.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints maxHeight="20.0" minHeight="20.0" prefHeight="20.0" vgrow="SOMETIMES" />
-          <RowConstraints maxHeight="20.0" minHeight="20.0" prefHeight="20.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <Label fx:id="lblFileScheduleName" onMouseClicked="#onScheduleFileChange" text="File of schedule" />
-            <Label fx:id="lblFileOfBlankName" text="File of blank for task" GridPane.rowIndex="1" />
-            <Label fx:id="lblChangeScheduleFile" onMouseClicked="#onScheduleFileChange" text="... change ..." GridPane.columnIndex="1" />
-            <Label fx:id="lblChangeBlankFile" onMouseClicked="#onBlankFileChange" text="... change ..." GridPane.columnIndex="1" GridPane.rowIndex="1" />
-         </children>
-         <BorderPane.margin>
-            <Insets left="10.0" />
-         </BorderPane.margin>
-      </GridPane>
+      <Label fx:id="lblFileScheduleName" onMouseClicked="#onScheduleFileChange" prefHeight="17.0" prefWidth="409.0" text="File of schedule" BorderPane.alignment="CENTER" />
    </bottom>
 </BorderPane>

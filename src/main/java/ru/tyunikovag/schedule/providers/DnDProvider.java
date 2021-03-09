@@ -1,4 +1,4 @@
-package new_schedule;
+package ru.tyunikovag.schedule.providers;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -16,7 +16,7 @@ public class DnDProvider {
     private static Object dragTarget;
 
 
-    static void labelDragDetected (MouseEvent event) {
+    public static void labelDragDetected (MouseEvent event) {
         /* drag was detected, start drag-and-drop gesture*/
         System.out.println("onDragDetected");
         Label label = (Label) event.getSource();
@@ -34,7 +34,7 @@ public class DnDProvider {
         dragSource = event.getSource();
     }
 
-    static void onTextAreaDragOver (DragEvent event) {
+    public static void onTextAreaDragOver (DragEvent event) {
         /* data is dragged over the target */
         System.out.println("onDragOver");
 
@@ -49,7 +49,7 @@ public class DnDProvider {
         event.consume();
     }
 
-    static void onTextAreaDragDropped (DragEvent event) {
+    public static void onTextAreaDragDropped (DragEvent event) {
 
         System.out.println("onDragDropped");
         /* if there is a string data on dragboard, read it and use it */
@@ -78,7 +78,7 @@ public class DnDProvider {
         event.consume();
     }
 
-    static void onLeftBoxDragOver (DragEvent event) {
+    public static void onLeftBoxDragOver (DragEvent event) {
         /* data is dragged over the target */
         System.out.println("onLeftOver");
 
@@ -93,7 +93,7 @@ public class DnDProvider {
         event.consume();
     }
 
-    static void onLeftBoxDragDropped (DragEvent event) {
+    public static void onLeftBoxDragDropped (DragEvent event) {
 
         System.out.println("onLeftDropped");
         /* if there is a string data on dragboard, read it and use it */

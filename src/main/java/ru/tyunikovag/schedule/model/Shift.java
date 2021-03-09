@@ -1,4 +1,4 @@
-package new_schedule;
+package ru.tyunikovag.schedule.model;
 
 public enum Shift {
     MORNING,

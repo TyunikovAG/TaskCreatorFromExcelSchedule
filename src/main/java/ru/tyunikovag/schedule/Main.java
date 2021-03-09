@@ -1,4 +1,4 @@
-package new_schedule;
+package ru.tyunikovag.schedule;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -6,7 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class NewMain extends Application {
+public class Main extends Application {
 
     public static void main(String[] args) {
         Application.launch();
@@ -15,11 +15,7 @@ public class NewMain extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(NewMain.class.getResource("test.fxml"));
-        //Parent mainLayout = loader.load();
-
-        Parent fxmlRoot = loader.load(getClass().getClassLoader().getResource("test.fxml"));
+        Parent fxmlRoot = new FXMLLoader().load(getClass().getClassLoader().getResource("MainWindow.fxml"));
 
         Scene scene = new Scene(fxmlRoot);
         primaryStage.setScene(scene);

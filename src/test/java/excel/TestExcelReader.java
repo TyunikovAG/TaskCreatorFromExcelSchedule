@@ -1,13 +1,12 @@
 package excel;
 
-import new_schedule.ExelProvider;
-import new_schedule.Shift;
-import new_schedule.Worker;
+import ru.tyunikovag.schedule.providers.ExelProvider;
+import ru.tyunikovag.schedule.model.Shift;
+import ru.tyunikovag.schedule.model.Worker;
 
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import java.util.Map;
 
 public class TestExcelReader {

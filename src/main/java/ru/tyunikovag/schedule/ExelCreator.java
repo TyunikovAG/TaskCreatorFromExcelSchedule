@@ -1,10 +1,14 @@
-package new_schedule;
+package ru.tyunikovag.schedule;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import ru.tyunikovag.schedule.model.Shift;
+import ru.tyunikovag.schedule.model.TeamTask;
+import ru.tyunikovag.schedule.model.Team;
+import ru.tyunikovag.schedule.model.Worker;
 
 import java.awt.*;
 import java.io.File;
@@ -23,16 +27,16 @@ public class ExelCreator {
     File parentDir;
     String createdFileNname;
 
-    public void createTaskBlank(TaskBlank taskBlank, String taskBlankFileName) {
+    public void createTaskBlank(TeamTask teamTask, String taskBlankFileName) {
 
         blankFile = new File(taskBlankFileName);
         if (blankFile.exists()){
             try {
                 Workbook workbook = new XSSFWorkbook(blankFile);
-                fillBlank(workbook, taskBlank);
+                fillBlank(workbook, teamTask);
                 parentDir = blankFile.getAbsoluteFile().getParentFile();
                 createdFileNname = String.format("%s/Наряд на %s - %s.xlsx",
-                        parentDir, taskBlank.getData().toString(), rusShift(taskBlank.getShift()));
+                        parentDir, teamTask.getData().toString(), rusShift(teamTask.getShift()));
 
                 FileOutputStream fos = new FileOutputStream(createdFileNname);
                 workbook.write(fos);
@@ -62,12 +66,12 @@ public class ExelCreator {
         }
     }
 
-    private void fillBlank(Workbook workbook, TaskBlank taskBlank) {
+    private void fillBlank(Workbook workbook, TeamTask teamTask) {
         Sheet sheet = workbook.getSheetAt(0);
 
-        fillHeaderDate(sheet, taskBlank.getData());
-        fillHeaderShift(sheet, taskBlank.getShift());
-        for (Team team : taskBlank.getTeams()){
+        fillHeaderDate(sheet, teamTask.getData());
+        fillHeaderShift(sheet, teamTask.getShift());
+        for (Team team : teamTask.getTeams()){
             fillTeamLine(sheet, team);
             rowForTeam++;
         }
@@ -119,8 +123,8 @@ public class ExelCreator {
             members.append("старший\n");
         }
         for (Worker worker : team.getMembers()){
-            members.append(worker.fio + "\n", fontBold);
-            members.append(worker.proffesion + "\n");
+            members.append(worker.getFio() + "\n", fontBold);
+            members.append(worker.getProfession() + "\n");
         }
         fillTwoCell(leftCell, row, members, team.getTask(), lbMulti);
         fillTwoCell(rightCell, row, members, team.getTask(), lbMulti);

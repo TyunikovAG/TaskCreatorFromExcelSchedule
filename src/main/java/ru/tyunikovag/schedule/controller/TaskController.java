@@ -1,4 +1,4 @@
-package new_schedule;
+package ru.tyunikovag.schedule.controller;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -17,6 +17,15 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import ru.tyunikovag.schedule.providers.DnDProvider;
+import ru.tyunikovag.schedule.ExelCreator;
+import ru.tyunikovag.schedule.providers.ExelProvider;
+import ru.tyunikovag.schedule.providers.PropertyProvider;
+import ru.tyunikovag.schedule.menu.SettingController;
+import ru.tyunikovag.schedule.model.Shift;
+import ru.tyunikovag.schedule.model.TeamTask;
+import ru.tyunikovag.schedule.model.Team;
+import ru.tyunikovag.schedule.model.Worker;
 
 import javax.swing.*;
 import java.io.File;
@@ -26,7 +35,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public class NewMainController implements Initializable {
+public class TaskController implements Initializable {
 
     Map<Worker, Map<Integer, Shift>> scheduleOfAllWorkers;
     ExelProvider exelProvider;
@@ -69,9 +78,6 @@ public class NewMainController implements Initializable {
     private Button buttonMain;
 
     @FXML
-    private Label lblFileOfBlankName;
-
-    @FXML
     private Label lblFileScheduleName;
 
     @FXML
@@ -81,6 +87,7 @@ public class NewMainController implements Initializable {
     private Label lblChangeBlankFile;
 
     private Object sendedObject;
+    private SettingController settingController = new SettingController();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -91,30 +98,29 @@ public class NewMainController implements Initializable {
         cmbTaskAuthor.getItems().addAll("Семёнов И.П.", "Шаповалов Д.С.", "Крамер А.В.");
 
         datePicker.setValue(NOW_LOCAL_DATE());
-        onButtonAddScetionAction(new ActionEvent());
+        onButtonAddSectionAction(new ActionEvent());
         lblFileScheduleName.setText("Файл графика: " + scheduleFileName);
-        lblFileOfBlankName.setText("Файл бланка наряда: " + taskBlankFileName);
         leftBox.setOnDragOver(DnDProvider::onLeftBoxDragOver);
         leftBox.setOnDragDropped(DnDProvider::onLeftBoxDragDropped);
         setMembersImage();
     }
 
-    public static final LocalDate NOW_LOCAL_DATE (){
+    public static final LocalDate NOW_LOCAL_DATE() {
         String date = new SimpleDateFormat("dd-MM-yyyy").format(Calendar.getInstance().getTime());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate localDate = LocalDate.parse(date, formatter);
         return localDate;
     }
 
-    private void setMembersImage(){
+    private void setMembersImage() {
         Image image = new Image("members.jpg");
         BackgroundSize backgroundSize = new BackgroundSize(300, 300, true, true, true, false);
         BackgroundPosition bottom = new BackgroundPosition(Side.LEFT, 0, false,
-                                                            Side.BOTTOM, 0, false);
+                Side.BOTTOM, 0, false);
         BackgroundImage backgroundImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, bottom, backgroundSize);
         BackgroundFill fill = new BackgroundFill(Color.LIGHTGRAY, null, null);
 
-        Background background0 = new Background(new BackgroundFill[] {fill}, new BackgroundImage[] {backgroundImage});
+        Background background0 = new Background(new BackgroundFill[]{fill}, new BackgroundImage[]{backgroundImage});
         leftBox.setBackground(background0);
     }
 
@@ -129,7 +135,7 @@ public class NewMainController implements Initializable {
 
         for (Worker worker : workers
         ) {
-            Label label = new Label(worker.fio);
+            Label label = new Label(worker.getFio());
             label.setOnDragDetected(DnDProvider::labelDragDetected);
             leftBox.getChildren().add(label);
         }
@@ -138,11 +144,11 @@ public class NewMainController implements Initializable {
     private void checkForMe(Map<Worker, Map<Integer, Shift>> scheduleOfAllWorkers) {
         boolean toExit = true;
         for (Worker worker : scheduleOfAllWorkers.keySet()) {
-            if (worker.fio.contains("Тюников")){
+            if (worker.getFio().contains("Тюников")) {
                 toExit = false;
             }
         }
-        if (toExit){
+        if (toExit) {
             JOptionPane.showMessageDialog(null,
                     "Неверное структурное подразделение", "Error", JOptionPane.ERROR_MESSAGE);
             Platform.exit();
@@ -164,24 +170,24 @@ public class NewMainController implements Initializable {
         return workersOnShift;
     }
 
-    Shift getShiftByString(String s){
-        switch (s){
-            case "Утро":{
+    Shift getShiftByString(String s) {
+        switch (s) {
+            case "Утро": {
                 return Shift.MORNING;
             }
-            case "Вечер":{
+            case "Вечер": {
                 return Shift.EVENING;
             }
-            case "Ночь":{
+            case "Ночь": {
                 return Shift.NIGHT;
             }
         }
-        return  null;
+        return null;
     }
 
     public void deleteAllFromLeft() {
         List<Node> list = leftBox.getChildren();
-        while (list.size() > 1){
+        while (list.size() > 1) {
             list.remove(1);
         }
     }
@@ -190,13 +196,13 @@ public class NewMainController implements Initializable {
     void OnMainButtonAction(ActionEvent event) {
         Label label = (Label) leftBox.getChildren().get(0);
         label.setText(datePicker.getValue().toString());
-        if (cmbShift.getValue() == null || cmbShift.getValue().equals("Укажите смену")){
+        if (cmbShift.getValue() == null || cmbShift.getValue().equals("Укажите смену")) {
             JOptionPane.showMessageDialog(null,
                     "Не указана смена", "InfoBox", JOptionPane.INFORMATION_MESSAGE);
 
         } else {
             claenCentralBox();
-            onButtonAddScetionAction(new ActionEvent());
+            onButtonAddSectionAction(new ActionEvent());
             fillLeftBoxByWorkers();
         }
     }
@@ -211,7 +217,7 @@ public class NewMainController implements Initializable {
     }
 
     @FXML
-    void onButtonAddScetionAction(ActionEvent event) {
+    void onButtonAddSectionAction(ActionEvent event) {
         VBox teamBox = new VBox();
         teamBox.setSpacing(10);
         Label lblTeamNumber = new Label("Звено №" + (teamCount + 1));
@@ -231,13 +237,13 @@ public class NewMainController implements Initializable {
     }
 
     @FXML
-    void onDeleteSectionAction (ActionEvent event){
+    void onDeleteSectionAction(ActionEvent event) {
         List<Node> ceneterList = ctnterBox.getChildren();
-        if (ceneterList.size() > 3){
+        if (ceneterList.size() > 3) {
             VBox teamBox = (VBox) ceneterList.get(ceneterList.size() - 3);
             FlowPane flowPane = (FlowPane) teamBox.getChildren().get(1);
             List<Node> labels = flowPane.getChildren();
-            for (Node node : labels){
+            for (Node node : labels) {
                 Label label = (Label) node;
                 leftBox.getChildren().add(new Label(label.getText()));
             }
@@ -249,16 +255,16 @@ public class NewMainController implements Initializable {
     @FXML
     void onButtonSendToBlankAction(ActionEvent event) {
         boolean isFieldsEmpty = false;
-        for (Node node : ctnterBox.getChildren()){
-            if (node.getClass().equals(VBox.class)){
+        for (Node node : ctnterBox.getChildren()) {
+            if (node.getClass().equals(VBox.class)) {
                 boolean isBoxEmpty = isTeamBoxEmpty((VBox) node);
                 isFieldsEmpty |= isBoxEmpty;
             }
         }
 
-        if (!isFieldsEmpty){
-            TaskBlank taskBlank = createTaskBlank();
-            new ExelCreator().createTaskBlank(taskBlank, taskBlankFileName);
+        if (!isFieldsEmpty) {
+            TeamTask teamTask = createTaskBlank();
+            new ExelCreator().createTaskBlank(teamTask, taskBlankFileName);
         }
     }
 
@@ -272,21 +278,11 @@ public class NewMainController implements Initializable {
         }
     }
 
-    @FXML
-    void onBlankFileChange(MouseEvent event) {
-        if (event.getClickCount() == 2) {
-            propertyProvider.setFileForProperty(PropertyProvider.PropertyName.TASK_BLANK_FILE_NAME);
-            taskBlankFileName = propertyProvider.get(PropertyProvider.PropertyName.TASK_BLANK_FILE_NAME);
-            lblFileOfBlankName.setText(taskBlankFileName);
-            propertyProvider.saveProperties();
-        }
-    }
-
-    private TaskBlank createTaskBlank() {
-        TaskBlank taskBlank = new TaskBlank(datePicker.getValue(), getShiftByString(cmbShift.getValue()));
+    private TeamTask createTaskBlank() {
+        TeamTask teamTask = new TeamTask(datePicker.getValue(), getShiftByString(cmbShift.getValue()));
         List<Team> teams = getTeams();
-        taskBlank.setTeams(teams);
-        return taskBlank;
+        teamTask.setTeams(teams);
+        return teamTask;
     }
 
     private List<Team> getTeams() {
@@ -294,12 +290,12 @@ public class NewMainController implements Initializable {
         List<Team> teams = new ArrayList<>(teamCount);
         for (int i = 0; i < teamCount; i++) {
             Object object = ctnterBox.getChildren().get(i);
-            if (!object.getClass().equals(VBox.class)){
+            if (!object.getClass().equals(VBox.class)) {
                 continue;
             }
             VBox teamBox = (VBox) object;
-            Label teamNuber = (Label)teamBox.getChildren().get(0);
-            FlowPane flowPane = (FlowPane)teamBox.getChildren().get(1);
+            Label teamNuber = (Label) teamBox.getChildren().get(0);
+            FlowPane flowPane = (FlowPane) teamBox.getChildren().get(1);
             TextArea teamtask = (TextArea) teamBox.getChildren().get(2);
 
             Team team = new Team(teamNuber.getText(), teamtask.getText());
@@ -308,8 +304,8 @@ public class NewMainController implements Initializable {
             Set<Worker> allWorkers = scheduleOfAllWorkers.keySet();
             for (int j = 0; j < memberCount; j++) {
                 Label label = (Label) flowPane.getChildren().get(j);
-                for (Worker worker : allWorkers){
-                    if (worker.getFio().equals(label.getText())){
+                for (Worker worker : allWorkers) {
+                    if (worker.getFio().equals(label.getText())) {
                         members.add(worker);
                     }
                 }
@@ -320,7 +316,7 @@ public class NewMainController implements Initializable {
         return teams;
     }
 
-    private boolean isTeamBoxEmpty(VBox vBox){
+    private boolean isTeamBoxEmpty(VBox vBox) {
         int indexOfTeamName = 0;
         int indexOfMembersContainer = 1;
         int indexOfTaskTextArea = 2;
@@ -328,13 +324,13 @@ public class NewMainController implements Initializable {
         FlowPane flowPane = (FlowPane) vBox.getChildren().get(indexOfMembersContainer);
         TextArea textArea = (TextArea) vBox.getChildren().get(indexOfTaskTextArea);
 
-        if (flowPane.getChildren().size() == 0){
+        if (flowPane.getChildren().size() == 0) {
             String message = "Нет ни одного работника в " + teamName.getText();
             JOptionPane.showMessageDialog(null,
                     message, "InfoBox", JOptionPane.INFORMATION_MESSAGE);
             return true;
         }
-        if (textArea.getText().trim().isEmpty()){
+        if (textArea.getText().trim().isEmpty()) {
             String message = String.format("Задание для %s пустое", teamName.getText());
             JOptionPane.showMessageDialog(null,
                     message, "InfoBox", JOptionPane.INFORMATION_MESSAGE);
@@ -355,5 +351,10 @@ public class NewMainController implements Initializable {
         taskBlankFileName = propertyProvider.get(PropertyProvider.PropertyName.TASK_BLANK_FILE_NAME);
 
         propertyProvider.saveProperties();
+    }
+
+    @FXML
+    public void onMenuSettingAction(ActionEvent event) {
+        settingController.action();
     }
 }
