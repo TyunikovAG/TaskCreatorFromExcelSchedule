@@ -11,13 +11,28 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 public class PropertyProvider {
 
     private static final Properties properties = new Properties();
-    private final File propertyFile = new File("settings.prp");
+    private static final File propertyFile = new File("settings.prp");
+    private static PropertyProvider propertyProvider;
+
+    private PropertyProvider() {
+
+    }
+
+    public static PropertyProvider getInstance(){
+        if(propertyProvider == null){
+            propertyProvider = new PropertyProvider();
+        }
+        propertyProvider.getProperties();
+        return propertyProvider;
+    }
 
     public Properties getProperties() {
         if (!propertyFile.exists()) {
@@ -53,7 +68,7 @@ public class PropertyProvider {
     }
 
     private void ferifyProps(PropertyName propertyName) {
-        if (!properties.containsKey(propertyName.toString())){
+        if (!properties.containsKey(propertyName.toString())) {
             setFileForProperty(propertyName);
         } else {
             File propertyFile = new File(properties.getProperty(propertyName.toString()));
@@ -73,7 +88,7 @@ public class PropertyProvider {
         }
     }
 
-    public String get(PropertyName key) throws IllegalArgumentException{
+    public String get(PropertyName key) throws IllegalArgumentException {
         switch (key) {
             case SCHEDULE_FILE_NAME: {
                 return getScheduleFileName();
@@ -124,6 +139,11 @@ public class PropertyProvider {
 
         }
 
+    }
+
+    public List<String> getAuthors() {
+        return Arrays.asList("Семёнов И.П.", "Крамер А.В.");
+        // TODO: 13.03.2021 implement load authors list from property
     }
 
     public enum PropertyName {

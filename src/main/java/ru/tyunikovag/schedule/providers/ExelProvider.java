@@ -4,6 +4,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ru.tyunikovag.schedule.model.Shift;
 import ru.tyunikovag.schedule.model.Worker;
+import ru.tyunikovag.schedule.util.Util;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,8 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ExelProvider {
-    private static final String regForFIO = "[а-яА-Я]+\\s[а-яА-Я]\\.\\s?[а-яА-Я]\\.";
-    private static Pattern patternFIO = Pattern.compile(regForFIO);
+
     private static final String CORNER_TEXT = "ФИО, должность";
     private static final Map<Worker, Map<Integer, Shift>> scheduleOfAllWorkers = new HashMap<>(50);
     Workbook workbook;
@@ -70,7 +70,7 @@ public class ExelProvider {
                 if (cell != null) {
                     if (sheet.getRow(i).getCell(cornerColumn).getCellType() == CellType.STRING) {
                         String fioString = cell.getStringCellValue();
-                        Worker worker = new Worker(getFIO(fioString), getProffesion(fioString));
+                        Worker worker = new Worker(Util.getFIO(fioString), getProfession(fioString));
                         scheduleOfAllWorkers.put(worker, fillOneLine(cell.getRowIndex(), worker.getFio()));
                     }
                 }
@@ -124,21 +124,14 @@ public class ExelProvider {
         return "invalid format data in cell";
     }
 
-    private String getFIO(String line) {
-        Matcher matcher = patternFIO.matcher(line);
-        if (matcher.find()) {
-            return matcher.group();
-        } else {
-            return "неверный формат Ф.И.О.";
-        }
-    }
 
-    private String getProffesion(String line) {
+
+    private String getProfession(String line) {
         if (line.endsWith("АСУ и ТП")) {
             return "АСУ и ТП";
-        } else if (line.endsWith("Эл-слесарь")) {
+        } else if (line.endsWith("слесарь")) {
             return "Эл-слесарь";
-        } else if (line.endsWith("Эл-сварщик")) {
+        } else if (line.endsWith("сварщик")) {
             return "Эл-сварщик";
         } else {
             return "неверный формат профессии";

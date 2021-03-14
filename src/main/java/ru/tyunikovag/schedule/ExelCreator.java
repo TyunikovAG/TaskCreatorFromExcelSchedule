@@ -6,7 +6,7 @@ import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ru.tyunikovag.schedule.model.Shift;
-import ru.tyunikovag.schedule.model.TeamTask;
+import ru.tyunikovag.schedule.model.Task;
 import ru.tyunikovag.schedule.model.Team;
 import ru.tyunikovag.schedule.model.Worker;
 
@@ -27,16 +27,16 @@ public class ExelCreator {
     File parentDir;
     String createdFileNname;
 
-    public void createTaskBlank(TeamTask teamTask, String taskBlankFileName) {
+    public void createTaskBlank(Task task, String taskBlankFileName) {
 
         blankFile = new File(taskBlankFileName);
         if (blankFile.exists()){
             try {
                 Workbook workbook = new XSSFWorkbook(blankFile);
-                fillBlank(workbook, teamTask);
+                fillBlank(workbook, task);
                 parentDir = blankFile.getAbsoluteFile().getParentFile();
                 createdFileNname = String.format("%s/Наряд на %s - %s.xlsx",
-                        parentDir, teamTask.getData().toString(), rusShift(teamTask.getShift()));
+                        parentDir, task.getData().toString(), rusShift(task.getShift()));
 
                 FileOutputStream fos = new FileOutputStream(createdFileNname);
                 workbook.write(fos);
@@ -66,12 +66,12 @@ public class ExelCreator {
         }
     }
 
-    private void fillBlank(Workbook workbook, TeamTask teamTask) {
+    private void fillBlank(Workbook workbook, Task task) {
         Sheet sheet = workbook.getSheetAt(0);
 
-        fillHeaderDate(sheet, teamTask.getData());
-        fillHeaderShift(sheet, teamTask.getShift());
-        for (Team team : teamTask.getTeams()){
+        fillHeaderDate(sheet, task.getData());
+        fillHeaderShift(sheet, task.getShift());
+        for (Team team : task.getTeams().values()){
             fillTeamLine(sheet, team);
             rowForTeam++;
         }
