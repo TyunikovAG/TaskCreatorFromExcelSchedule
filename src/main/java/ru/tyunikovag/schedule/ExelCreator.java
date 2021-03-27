@@ -1,7 +1,10 @@
 package ru.tyunikovag.schedule;
 
+import org.apache.poi.hssf.usermodel.HSSFName;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellAddress;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -18,14 +21,14 @@ import java.time.LocalDate;
 
 public class ExelCreator {
 
-    int rowForTeam = 17;
-    int colLeftTeam = 0;
-    int colRightTeam = 5;
-    int rowOfDate = 6;
-    int rowOfShift = 7;
-    File blankFile;
-    File parentDir;
-    String createdFileNname;
+    private int rowForTeam = 17;
+    private int colLeftTeam = 0;
+    private int colRightTeam = 5;
+    private int rowOfDate = 6;
+    private int rowOfShift = 7;
+    private File blankFile;
+    private File parentDir;
+    private String createdFileNname;
 
     public void createTaskBlank(Task task, String taskBlankFileName) {
 

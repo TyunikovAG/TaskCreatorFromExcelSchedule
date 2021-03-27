@@ -1,7 +1,8 @@
 package ru.tyunikovag.schedule.view;
 
-import javafx.application.Platform;
+import com.sun.javafx.collections.ObservableListWrapper;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -9,29 +10,25 @@ import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import ru.tyunikovag.schedule.controller.TaskController;
 import ru.tyunikovag.schedule.providers.DnDProvider;
-import ru.tyunikovag.schedule.ExelCreator;
 import ru.tyunikovag.schedule.providers.PropertyProvider;
 import ru.tyunikovag.schedule.controller.SettingController;
 import ru.tyunikovag.schedule.model.Shift;
-import ru.tyunikovag.schedule.model.Task;
-import ru.tyunikovag.schedule.model.Team;
 import ru.tyunikovag.schedule.model.Worker;
 import ru.tyunikovag.schedule.util.Util;
 
 import javax.swing.*;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class TaskView implements Initializable {
 
@@ -40,6 +37,10 @@ public class TaskView implements Initializable {
     private PropertyProvider propertyProvider = PropertyProvider.getInstance();
 
     @FXML
+    private Label leftBoxDate;
+    @FXML
+    private VBox teamListBox;
+    @FXML
     private VBox leftBox;
     @FXML
     public VBox mainLeftBox;
@@ -47,6 +48,8 @@ public class TaskView implements Initializable {
     private VBox centerBox;
     @FXML
     private Button btnAddTeam;
+    @FXML
+    private Button btnDeleteTeam;
     @FXML
     private Button btnSendToBlank;
     @FXML
@@ -65,28 +68,42 @@ public class TaskView implements Initializable {
     private Label lblChangeScheduleFile;
     @FXML
     private Label lblChangeBlankFile;
+    private final int indexOfTaskTextArea = 2;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        System.out.println("init TaskView");
 
         cmbShift.getItems().addAll("Ночь", "Утро", "Вечер");
-        cmbTaskAuthor.getItems().addAll(controller.getAuthors());
 
         datePicker.setValue(LocalDate.now());
-//        datePicker.setValue(NOW_LOCAL_DATE());
-        lblFileScheduleName.setText("Файл графика: " + controller.getScheduleFileName());
         leftBox.setOnDragOver(DnDProvider::onLeftBoxDragOver);
         leftBox.setOnDragDropped(DnDProvider::onLeftBoxDragDropped);
-        DnDProvider.setTaskView(this);
+        DnDProvider.setView(this);
         setImage();
-        onBtnAddTeam(new ActionEvent());
     }
 
-    private static LocalDate NOW_LOCAL_DATE() {
-        String date = new SimpleDateFormat("dd-MM-yyyy").format(Calendar.getInstance().getTime());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        return LocalDate.parse(date, formatter);
+    @FXML
+    void OnMainButtonAction(ActionEvent event) {
+
+        leftBoxDate.setText(datePicker.getValue().toString());
+
+        if (cmbShift.getValue() == null || cmbShift.getValue().equals("Укажите смену")) {
+            JOptionPane.showMessageDialog(null,
+                    "Не указана смена", "InfoBox", JOptionPane.INFORMATION_MESSAGE);
+
+        } else {
+            clearTeamListBox();
+            leftBox.getChildren().clear();
+            controller.resetTask();
+            fillLeftBoxByWorkers(controller.getWorkersOnShift(datePicker.getValue().getDayOfMonth(), getSelectedShift()));
+            controller.setShift(getSelectedShift());
+            controller.setTaskDate(datePicker.getValue());
+            addTeam(new ActionEvent());
+        }
+    }
+
+    public void setLblFileName(String fileName) {
+        lblFileScheduleName.setText("Файл графика: " + fileName);
     }
 
     private void setImage() {
@@ -101,23 +118,26 @@ public class TaskView implements Initializable {
         mainLeftBox.setBackground(background0);
     }
 
-    private void fillLeftBoxByWorkers() {
+    private void fillLeftBoxByWorkers(List<Worker> workersOnShift) {
 
-        deleteAllFromLeftBox();
-        Shift shift = getSelectedShift();
-        LocalDate localDate = datePicker.getValue();
-        List<Worker> workers = controller.getEmployeesOnShift(localDate.getDayOfMonth(), shift);
-
-        for (Worker worker : workers
+        for (Worker worker : workersOnShift
         ) {
-            addWorkerLabelToLeftBox(worker);
+            addWorkerLabelToLeftBox(worker.getFio());
         }
     }
 
-    public void addWorkerLabelToLeftBox(Worker worker) {
-        Label label = new Label(worker.getFio());
-        label.setOnDragDetected(DnDProvider::labelDragDetected);
+    public void addWorkerLabelToLeftBox(String fio) {
+        Label label = new Label(fio);
+        label.setOnDragDetected(DnDProvider::onLabelDragDetected);
+        label.setOnMouseClicked(event -> onLeftBoxOnWorkerLabelClicked(event, label.getText()));
         leftBox.getChildren().add(label);
+    }
+
+    private void onLeftBoxOnWorkerLabelClicked(MouseEvent event, String fio) {
+        if (event.getClickCount() == 2) {
+            addMemberToTeam(fio, null);
+            removeMemberFromLeftBox(event.getSource());
+        }
     }
 
     private Shift getSelectedShift() {
@@ -136,72 +156,91 @@ public class TaskView implements Initializable {
         return null;
     }
 
-    private void deleteAllFromLeftBox() {
+    private void deleteWorkersFromLeftBox() {
+//        leftBox.getChildren().clear();
         List<Node> list = leftBox.getChildren();
         while (list.size() > 1) {
             list.remove(1);
         }
     }
 
-    @FXML
-    void OnMainButtonAction(ActionEvent event) {
-        Label label = (Label) leftBox.getChildren().get(0);
-        label.setText(datePicker.getValue().toString());
-        if (cmbShift.getValue() == null || cmbShift.getValue().equals("Укажите смену")) {
-            JOptionPane.showMessageDialog(null,
-                    "Не указана смена", "InfoBox", JOptionPane.INFORMATION_MESSAGE);
-
-        } else {
-            clearCentralBox();
-            fillLeftBoxByWorkers();
-            onBtnAddTeam(new ActionEvent());
-        }
-    }
-
-    private void clearCentralBox() {
-        List<Node> centerList = centerBox.getChildren();
-        int count = centerList.size() - 2;
-        for (int i = 0; i < count; i++) {
-            centerList.remove(centerList.size() - 3);
-        }
+    private void clearTeamListBox() {
+        teamListBox.getChildren().clear();
     }
 
     @FXML
-    void onBtnAddTeam(ActionEvent event) {
+    public void addTeam(ActionEvent event) {
         int teamNumber = controller.addTeam();
         VBox teamBox = new VBox();
         teamBox.setId("teamBox#" + teamNumber);
         teamBox.setSpacing(10);
+
+        BorderPane topPane = new BorderPane();
         Label lblTeamNumber = new Label("Звено №" + teamNumber);
         lblTeamNumber.setFont(Font.font(24));
         lblTeamNumber.setPadding(new Insets(0, 0, 5, 15));
+        topPane.setLeft(lblTeamNumber);
+        topPane.setRight(getCmbTaskPatterns());
+
         FlowPane teamMembersFlowPane = new FlowPane();
         teamMembersFlowPane.setId("teamMembers#" + teamNumber);
 
         TextArea teamTask = new TextArea();
         teamTask.setId("teamTask#" + teamNumber);
         teamTask.setFont(new Font(16));
+        teamTask.setWrapText(true);
         teamTask.setOnDragOver(DnDProvider::onTeamTaskAreaDragOver);
         teamTask.setOnDragDropped(DnDProvider::onTeamTaskAreaDragDropped);
+        teamTask.setOnMouseClicked(this::onTaskAreaClicked);
 
-        teamBox.getChildren().addAll(lblTeamNumber, teamMembersFlowPane, teamTask);
+        teamBox.getChildren().addAll(topPane, teamMembersFlowPane, teamTask);
 
-        centerBox.getChildren().add(teamNumber - 1, teamBox);
+        teamListBox.getChildren().add(teamBox);
+    }
+
+    private ComboBox<String> getCmbTaskPatterns() {
+        ComboBox<String> patterns = new ComboBox<String>();
+        patterns.setItems(new ObservableListWrapper<String>(Arrays.asList(
+                "Осмотр ГВУ-3 согласно инструкции. Обслуживание насосных установок согласно инструкции по эксплуатации.\n",
+                "Осмотр ГВКУ-1 согласно инструкции. Осмотр ЦПП-4.\n",
+                "Работы по заявкам. Устранение выявленных неисправностей в работе оборудования.\n"
+        )));
+        patterns.setMaxWidth(50);
+        patterns.setOnAction(this::selectedTaskPattern);
+        return patterns;
+    }
+
+    private void selectedTaskPattern(Event event) {
+        ComboBox<String> patterns = (ComboBox<String>) event.getTarget();
+        VBox taskBox = (VBox) ((ComboBox) event.getTarget()).getParent().getParent();
+        TextArea taskArea = (TextArea) taskBox.getChildren().get(2);
+        taskArea.setText(taskArea.getText() + patterns.getValue());
+    }
+
+    private void onTaskAreaClicked(MouseEvent event) {
+        if (event.getClickCount() == 2) {
+//            final Stage dialog = new Stage();
+//            dialog.initModality(Modality.APPLICATION_MODAL);
+//            dialog.initOwner(null);
+//            VBox dialogVbox = new VBox(20);
+//            dialogVbox.getChildren().add(new Text("This is a Dialog"));
+//            Scene dialogScene = new Scene(dialogVbox, 300, 200);
+//            dialog.setScene(dialogScene);
+//            dialog.show();
+        }
     }
 
     @FXML
     void onBtnDeleteTeam(ActionEvent event) {
-        List<Node> ceneterList = centerBox.getChildren();
-        if (ceneterList.size() > 3) {
-            VBox teamBox = (VBox) ceneterList.get(ceneterList.size() - 3);
+        List<Node> teamBoxList = teamListBox.getChildren();
+        if (teamBoxList.size() > 1) {
+            VBox teamBox = (VBox) teamBoxList.get(teamBoxList.size() - 1);
             List<Node> workers = ((FlowPane) teamBox.getChildren().get(1)).getChildren();
             for (Node worker : workers) {
-                Label additionalLabel = new Label(((Label) worker).getText());
-                additionalLabel.setOnDragDetected(DnDProvider::labelDragDetected);
-                leftBox.getChildren().add(additionalLabel);
+                addWorkerLabelToLeftBox(((Label) worker).getText());
             }
-            ceneterList.remove(ceneterList.size() - 3);
-            controller.deleteOneTeam();
+            teamBoxList.remove(teamBoxList.size() - 1);
+            controller.deleteLastTeam();
         }
     }
 
@@ -209,15 +248,15 @@ public class TaskView implements Initializable {
     void onButtonSendToBlankAction(ActionEvent event) {
         // TODO: 14.03.2021 replace this because task is in field
         boolean isFieldsEmpty = false;
-        for (Node node : centerBox.getChildren()) {
-            if (node.getClass().equals(VBox.class)) {
-                boolean isBoxEmpty = isTeamBoxEmpty((VBox) node);
-                isFieldsEmpty |= isBoxEmpty;
-            }
+        for (Node teamBox : teamListBox.getChildren()) {
+            isFieldsEmpty |= isTeamBoxEmpty((VBox) teamBox);
+            TextArea teamTaskArea = (TextArea) ((VBox) teamBox).getChildren().get(indexOfTaskTextArea);
+
+            controller.setTeamTask(getTeamNumberFromId(teamBox.getId()), teamTaskArea.getText());
         }
 
-
         if (!isFieldsEmpty) {
+
             controller.sendTaskToBlank();
         }
     }
@@ -228,26 +267,23 @@ public class TaskView implements Initializable {
             propertyProvider.setFileForProperty(PropertyProvider.PropertyName.SCHEDULE_FILE_NAME);
             propertyProvider.saveProperties();
             controller.scheduleFileChanged();
-            lblFileScheduleName.setText(controller.getScheduleFileName());
         }
     }
 
-    private boolean isTeamBoxEmpty(VBox vBox) {
-        int indexOfTeamName = 0;
+    private boolean isTeamBoxEmpty(VBox teamBox) {
         int indexOfMembersContainer = 1;
-        int indexOfTaskTextArea = 2;
-        Label teamName = (Label) vBox.getChildren().get(indexOfTeamName);
-        FlowPane flowPane = (FlowPane) vBox.getChildren().get(indexOfMembersContainer);
-        TextArea textArea = (TextArea) vBox.getChildren().get(indexOfTaskTextArea);
+        int teamNumber = getTeamNumberFromId(teamBox.getId());
+        FlowPane workersPane = (FlowPane) teamBox.getChildren().get(indexOfMembersContainer);
+        TextArea teamTaskArea = (TextArea) teamBox.getChildren().get(indexOfTaskTextArea);
 
-        if (flowPane.getChildren().size() == 0) {
-            String message = "Нет ни одного работника в " + teamName.getText();
+        if (workersPane.getChildren().size() == 0) {
+            String message = "Нет ни одного работника в звене №" + teamNumber;
             JOptionPane.showMessageDialog(null,
                     message, "InfoBox", JOptionPane.INFORMATION_MESSAGE);
             return true;
         }
-        if (textArea.getText().trim().isEmpty()) {
-            String message = String.format("Задание для %s пустое", teamName.getText());
+        if (teamTaskArea.getText().trim().isEmpty()) {
+            String message = String.format("Задание для звена№%s пустое", teamNumber);
             JOptionPane.showMessageDialog(null,
                     message, "InfoBox", JOptionPane.INFORMATION_MESSAGE);
             return true;
@@ -288,33 +324,99 @@ public class TaskView implements Initializable {
                 }
                 String profession = (line.length() > fio.length()) ? line.substring(fio.length() + 1) : "";
                 controller.addAnotherWorker(fio, profession);
-                Worker worker = new Worker(fio, profession);
-                addWorkerLabelToLeftBox(worker);
             }
         }
     }
 
-    public void addMemberToTeam(VBox teamLocalTaskBox, String fio) {
+    public void draggedMemberToLeft(DragEvent event) {
+        String fio = event.getDragboard().getString();
+        addWorkerLabelToLeftBox(fio);
 
-        String id = teamLocalTaskBox.getId();
-        id = id.substring(id.indexOf('#') + 1);
-        int teamNumber = (Integer.parseInt(id));
-        Worker worker = workers.stream().filter(wrkr -> wrkr.getFio().equals(fio)).findFirst().get();
-        task.getTeams().get(teamNumber).getMembers().add(worker);
+        removeMemberFromTeam(event);
     }
 
-    public void removeMemberFromTeam(Pane teamLocalTaskBox, String fio) {
+    public void draggedMemberToTeam(DragEvent event) {
+        String fio = event.getDragboard().getString();
+        TextArea teamTaskArea = (TextArea) event.getSource();
+        VBox teamLocalTaskBox = (VBox) teamTaskArea.getParent();
 
-        if (teamLocalTaskBox.getId().startsWith("teamBox#")) {
-            String id = teamLocalTaskBox.getId();
-            id = id.substring(id.indexOf('#') + 1);
-            int teamNumber = (Integer.parseInt(id));
-            Worker worker = workers.stream().filter(wrkr -> wrkr.getFio().equals(fio)).findFirst().get();
-            task.getTeams().get(teamNumber).getMembers().remove(worker);
+        addMemberToTeam(fio, teamLocalTaskBox);
+        if (((Label) event.getGestureSource()).getParent().getId().toLowerCase().contains("leftbox")) {
+            removeMemberFromLeftBox(event.getGestureSource());
         }
+        if (((Label) event.getGestureSource()).getParent().getId().toLowerCase().contains("teammembers")) {
+            removeMemberFromTeam(event);
+        }
+    }
+
+    private void removeMemberFromLeftBox(Object label) {
+        leftBox.getChildren().remove(label);
+    }
+
+    private void addMemberToTeam(String fio, VBox teamLocalTaskBox) {
+        Label teamMember = new Label(fio);
+        teamMember.setFont(Font.font(16));
+        teamMember.setPadding(new Insets(0, 0, 10, 10));
+        teamMember.setOnDragDetected(DnDProvider::onLabelDragDetected);
+        teamMember.setOnMouseClicked(event -> onTeamMemberClicked(event, fio));
+
+        if (teamLocalTaskBox == null) {
+            int teamsCount = teamListBox.getChildren().size() - 1;
+            teamLocalTaskBox = (VBox) (teamListBox.getChildren().get(teamsCount));
+        }
+
+        FlowPane teamMembers = (FlowPane) teamLocalTaskBox.getChildren().get(1);
+        teamMembers.getChildren().add(teamMember);
+
+        int teamNumber = getTeamNumberFromId(teamLocalTaskBox.getId());
+        controller.addMemberToTeam(teamNumber, fio);
+    }
+
+    private void onTeamMemberClicked(MouseEvent event, String fio) {
+        if (event.getClickCount() == 2) {
+            addWorkerLabelToLeftBox(fio);
+            removeMemberFromTeam(event);
+        }
+    }
+
+    public void removeMemberFromTeam(InputEvent event) {
+        Label dragSource = null;
+        int teamNumber = 0;
+        String fio = null;
+        if (event.getClass().equals(DragEvent.class)) {
+            dragSource = (Label) ((DragEvent) event).getGestureSource();
+            fio = ((DragEvent) event).getDragboard().getString();
+        } else if (event.getClass().equals(MouseEvent.class)) {
+            dragSource = (Label) event.getSource();
+            fio = dragSource.getText();
+        }
+        teamNumber = getTeamNumberFromId(dragSource.getParent().getParent().getId());
+        assert dragSource != null;
+        controller.removeMemberFromTeam(teamNumber, fio);
+
+        ((Pane) dragSource.getParent()).getChildren().remove(dragSource);
+    }
+
+    private int getTeamNumberFromId(String id) {
+        id = id.substring(id.indexOf('#') + 1);
+        return Integer.parseInt(id);
     }
 
     public void setController(TaskController controller) {
         this.controller = controller;
     }
+
+    public void setTaskAuthors(List<String> authors) {
+        cmbTaskAuthor.getItems().addAll(authors);
+    }
+
+    public void onAuthorSelect(ActionEvent actionEvent) {
+        controller.changeAuthor((String) ((ComboBox) actionEvent.getSource()).getValue());
+    }
+
+//    private static LocalDate NOW_LOCAL_DATE() {
+//        String date = new SimpleDateFormat("dd-MM-yyyy").format(Calendar.getInstance().getTime());
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+//        return LocalDate.parse(date, formatter);
+//    }
 }

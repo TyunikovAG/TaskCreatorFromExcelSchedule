@@ -28,6 +28,6 @@
         </MenuBar>
     </top>
     <center>
-        <fx:include source="task.fxml"/>
+        <fx:include fx:id="taskWindow" source="task.fxml"/>
     </center>
 </BorderPane>

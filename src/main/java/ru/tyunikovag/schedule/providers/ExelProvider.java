@@ -124,8 +124,6 @@ public class ExelProvider {
         return "invalid format data in cell";
     }
 
-
-
     private String getProfession(String line) {
         if (line.endsWith("АСУ и ТП")) {
             return "АСУ и ТП";

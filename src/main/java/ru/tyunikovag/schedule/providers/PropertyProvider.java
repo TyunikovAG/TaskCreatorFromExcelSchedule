@@ -22,28 +22,48 @@ public class PropertyProvider {
     private static final File propertyFile = new File("settings.prp");
     private static PropertyProvider propertyProvider;
 
-    private PropertyProvider() {
-
-    }
-
     public static PropertyProvider getInstance(){
         if(propertyProvider == null){
             propertyProvider = new PropertyProvider();
         }
-        propertyProvider.getProperties();
         return propertyProvider;
     }
 
-    public Properties getProperties() {
+    private PropertyProvider() {
+        getProperties();
+    }
+
+    private void getProperties() {
         if (!propertyFile.exists()) {
             createProperties();
         } else {
             System.out.println("property file exist");
-            loadProperties();
-            ferifyProps(PropertyName.SCHEDULE_FILE_NAME);
-            ferifyProps(PropertyName.TASK_BLANK_FILE_NAME);
+            loadPropertiesFile();
+            verifyProps(PropertyName.SCHEDULE_FILE_NAME);
+            verifyProps(PropertyName.TASK_BLANK_FILE_NAME);
         }
-        return properties;
+    }
+
+    private void loadPropertiesFile() {
+        try (FileInputStream inputStream = new FileInputStream(propertyFile)) {
+            properties.load(inputStream);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null,
+                    "can't LOAD property file settings.prp"
+                    ,"Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
+    private void verifyProps(PropertyName propertyName) {
+        if (!properties.containsKey(propertyName.toString())) {
+            setFileForProperty(propertyName);
+        } else {
+            File propertyFile = new File(properties.getProperty(propertyName.toString()));
+            if (!propertyFile.exists()) {
+                setFileForProperty(propertyName);
+            }
+        }
     }
 
     private void createProperties() {
@@ -54,27 +74,6 @@ public class PropertyProvider {
         } catch (IOException e) {
             System.out.println("can't CREATE property file settings.prp");
             e.printStackTrace();
-        }
-    }
-
-    private void loadProperties() {
-        try {
-            FileInputStream inputStream = new FileInputStream(propertyFile);
-            properties.load(inputStream);
-        } catch (IOException e) {
-            System.out.println("can't LOAD property file settings.prp");
-            e.printStackTrace();
-        }
-    }
-
-    private void ferifyProps(PropertyName propertyName) {
-        if (!properties.containsKey(propertyName.toString())) {
-            setFileForProperty(propertyName);
-        } else {
-            File propertyFile = new File(properties.getProperty(propertyName.toString()));
-            if (!propertyFile.exists()) {
-                setFileForProperty(propertyName);
-            }
         }
     }
 

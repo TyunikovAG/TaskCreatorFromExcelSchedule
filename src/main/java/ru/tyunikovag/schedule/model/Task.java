@@ -13,12 +13,12 @@ public class Task {
     private Shift shift;
 
     public Task() {
+        author = "Семёнов И.П.";
     }
 
     public Task(LocalDate data, Shift shift) {
         this.data = data;
         this.shift = shift;
-        author = "Семёнов И.П.";
     }
 
     public Task(LocalDate data, Shift shift, String author) {
