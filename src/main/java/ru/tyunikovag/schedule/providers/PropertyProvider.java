@@ -11,10 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class PropertyProvider {
 
@@ -115,7 +112,7 @@ public class PropertyProvider {
         }
         JFileChooser chooser = new JFileChooser(rootFolder);
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "Excel files", "xls", "xlsx");
+                "Excel files", "xlsx");
         chooser.setFileFilter(filter);
         switch (key) {
             case TASK_BLANK_FILE_NAME: {
@@ -141,8 +138,13 @@ public class PropertyProvider {
     }
 
     public List<String> getAuthors() {
-        return Arrays.asList("Семёнов И.П.", "Крамер А.В.");
         // TODO: 13.03.2021 implement load authors list from property
+        String author1 = properties.getProperty("author1");
+        String author2 = properties.getProperty("author2");
+        String author3 = properties.getProperty("author3");
+        String author4 = properties.getProperty("author4");
+        return Arrays.asList(new String[]{author1, author2, author3, author4});
+//        return Arrays.asList("Семёнов И.П.", "Крамер А.В.");
     }
 
     public enum PropertyName {

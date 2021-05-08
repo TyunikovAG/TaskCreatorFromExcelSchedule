@@ -95,7 +95,7 @@ public class TaskController {
 
     public void sendTaskToBlank() {
         // TODO: 14.03.2021 may I create NEW ExelCreator?
-        new ExelCreator().createTaskBlank(task, taskBlankFileName);
+        new ExelCreator().createTaskBlanks(task, taskBlankFileName);
     }
 
     public void scheduleFileChanged() {
@@ -125,7 +125,6 @@ public class TaskController {
     }
 
     private boolean isWorkersIsInTask(Worker worker) {
-//        return getWorkerFromTaskWorkersByFio(worker.getFio()) != null;
         return workersOnTask.stream().anyMatch(w -> w.getFio().equals(worker.getFio()));
     }
 

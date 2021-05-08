@@ -18,7 +18,7 @@ public class TestExelCreator {
     public static void main(String[] args) {
 
         initTesterBlank();
-        new ExelCreator().createTaskBlank(testerForTask, "бланк.xlsx");
+        new ExelCreator().createTaskBlanks(testerForTask, "бланк.xlsx");
     }
 
     private static void initTesterBlank() {

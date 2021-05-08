@@ -1,10 +1,7 @@
 package ru.tyunikovag.schedule;
 
-import org.apache.poi.hssf.usermodel.HSSFName;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellAddress;
-import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -30,7 +27,7 @@ public class ExelCreator {
     private File parentDir;
     private String createdFileNname;
 
-    public void createTaskBlank(Task task, String taskBlankFileName) {
+    public void createTaskBlanks(Task task, String taskBlankFileName) {
 
         blankFile = new File(taskBlankFileName);
         if (blankFile.exists()){
@@ -39,7 +36,9 @@ public class ExelCreator {
                 fillBlank(workbook, task);
                 parentDir = blankFile.getAbsoluteFile().getParentFile();
                 createdFileNname = String.format("%s/Наряд на %s - %s.xlsx",
-                        parentDir, task.getData().toString(), rusShift(task.getShift()));
+                        parentDir,
+                        task.getData().toString(),
+                        translateShift(task.getShift()));
 
                 FileOutputStream fos = new FileOutputStream(createdFileNname);
                 workbook.write(fos);
@@ -55,7 +54,7 @@ public class ExelCreator {
         }
     }
 
-    private String rusShift(Shift shift){
+    private String translateShift(Shift shift){
         switch (shift){
             case NIGHT:{
                 return "ночь";
