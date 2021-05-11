@@ -2,13 +2,12 @@ package ru.tyunikovag.schedule.model;
 
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Task {
 
     private Map<Integer, Team> teams = new HashMap<>();
-    private LocalDate data;
+    private LocalDate date;
     private String author;
     private Shift shift;
 
@@ -16,18 +15,18 @@ public class Task {
         author = "Семёнов И.П.";
     }
 
-    public Task(LocalDate data, Shift shift) {
-        this.data = data;
+    public Task(LocalDate date, Shift shift) {
+        this.date = date;
         this.shift = shift;
     }
 
-    public Task(LocalDate data, Shift shift, String author) {
-        this(data, shift);
+    public Task(LocalDate date, Shift shift, String author) {
+        this(date, shift);
         this.author = author;
     }
 
-    public LocalDate getData() {
-        return data;
+    public LocalDate getDate() {
+        return date;
     }
 
     public Shift getShift() {
@@ -38,8 +37,8 @@ public class Task {
         return author;
     }
 
-    public void setData(LocalDate data) {
-        this.data = data;
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 
     public void setShift(Shift shift) {

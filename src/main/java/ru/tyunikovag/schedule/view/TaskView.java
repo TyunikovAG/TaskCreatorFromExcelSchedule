@@ -127,16 +127,37 @@ public class TaskView implements Initializable {
     }
 
     public void addWorkerLabelToLeftBox(String fio) {
+        for (Node child : leftBox.getChildren()) {
+            Label label = (Label) child;
+            if (label.getText().equals(fio)) {
+                return;
+            }
+        }
+        leftBox.getChildren().add(createFioLabelForLeftBox(fio));
+
+    }
+
+    private Label createFioLabelForLeftBox(String fio) {
         Label label = new Label(fio);
         label.setOnDragDetected(DnDProvider::onLabelDragDetected);
         label.setOnMouseClicked(event -> onLeftBoxOnWorkerLabelClicked(event, label.getText()));
-        leftBox.getChildren().add(label);
+        return label;
     }
+
+    private Label createFioLabelForTeamMembers(String fio) {
+        Label label = new Label(fio);
+        label.setFont(Font.font(16));
+        label.setPadding(new Insets(0, 0, 10, 10));
+        label.setOnDragDetected(DnDProvider::onLabelDragDetected);
+        label.setOnMouseClicked(event -> onTeamMemberClicked(event, label.getText()));
+        return label;
+    }
+
 
     private void onLeftBoxOnWorkerLabelClicked(MouseEvent event, String fio) {
         if (event.getClickCount() == 2) {
-            addMemberToTeam(fio, null);
-            removeMemberFromLeftBox(event.getSource());
+            int teamsCount = teamListBox.getChildren().size();
+            controller.addMemberToTeam(teamsCount, fio);
         }
     }
 
@@ -336,17 +357,11 @@ public class TaskView implements Initializable {
     }
 
     public void draggedMemberToTeam(DragEvent event) {
+        // TODO: 11.05.2021 ошибка - добавляет не в текущую бригаду, а в предыдущую
         String fio = event.getDragboard().getString();
         TextArea teamTaskArea = (TextArea) event.getSource();
-        VBox teamLocalTaskBox = (VBox) teamTaskArea.getParent();
-
-        addMemberToTeam(fio, teamLocalTaskBox);
-        if (((Label) event.getGestureSource()).getParent().getId().toLowerCase().contains("leftbox")) {
-            removeMemberFromLeftBox(event.getGestureSource());
-        }
-        if (((Label) event.getGestureSource()).getParent().getId().toLowerCase().contains("teammembers")) {
-            removeMemberFromTeam(event);
-        }
+        int teamsCount = teamListBox.getChildren().size() - 1;
+        controller.addMemberToTeam(teamsCount, fio);
     }
 
     private void removeMemberFromLeftBox(Object label) {
@@ -354,22 +369,23 @@ public class TaskView implements Initializable {
     }
 
     private void addMemberToTeam(String fio, VBox teamLocalTaskBox) {
-        Label teamMember = new Label(fio);
-        teamMember.setFont(Font.font(16));
-        teamMember.setPadding(new Insets(0, 0, 10, 10));
-        teamMember.setOnDragDetected(DnDProvider::onLabelDragDetected);
-        teamMember.setOnMouseClicked(event -> onTeamMemberClicked(event, fio));
-
         if (teamLocalTaskBox == null) {
             int teamsCount = teamListBox.getChildren().size() - 1;
             teamLocalTaskBox = (VBox) (teamListBox.getChildren().get(teamsCount));
         }
-
         FlowPane teamMembers = (FlowPane) teamLocalTaskBox.getChildren().get(1);
-        teamMembers.getChildren().add(teamMember);
-
         int teamNumber = getTeamNumberFromId(teamLocalTaskBox.getId());
-        controller.addMemberToTeam(teamNumber, fio);
+        if (controller.addMemberToTeam(teamNumber, fio)) {
+            Label teamMember = new Label(fio);
+            teamMember.setFont(Font.font(16));
+            teamMember.setPadding(new Insets(0, 0, 10, 10));
+            teamMember.setOnDragDetected(DnDProvider::onLabelDragDetected);
+            teamMember.setOnMouseClicked(event -> onTeamMemberClicked(event, fio));
+
+            teamMembers.getChildren().add(teamMember);
+        }
+
+
     }
 
     private void onTeamMemberClicked(MouseEvent event, String fio) {
@@ -379,7 +395,15 @@ public class TaskView implements Initializable {
         }
     }
 
+    public void addWorkerToTeam(String fio, int teamNumber) {
+        // TODO: 11.05.2021 реаизовать заливку цветом в LeftBox
+        VBox teamBox = (VBox) teamListBox.getChildren().get(teamNumber - 1);
+        FlowPane members = (FlowPane) teamBox.getChildren().get(1);
+        members.getChildren().add(createFioLabelForTeamMembers(fio));
+    }
+
     public void removeMemberFromTeam(InputEvent event) {
+        // TODO: 11.05.2021 проверить если его не осталось не в одной ригаде - снять заливку.
         Label dragSource = null;
         int teamNumber = 0;
         String fio = null;

@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 public class TaskController {
 
     private TaskView view;
-    private Map<Worker, Map<Integer, Shift>> scheduleOfAllWorkers;
     private Task task = new Task();
     private Set<Worker> workersOnTask = new HashSet<>();
+    private Map<Worker, Map<Integer, Shift>> scheduleOfAllWorkers;
 
     private PropertyProvider propertyProvider;
     private ExelProvider exelProvider;
@@ -101,7 +101,7 @@ public class TaskController {
     public void scheduleFileChanged() {
         scheduleFileName = propertyProvider.get(PropertyProvider.PropertyName.SCHEDULE_FILE_NAME);
         view.setLblFileName(scheduleFileName);
-        // TODO: 14.03.2021 it must reread changed schedule
+        readScheduleAndWorkers(LocalDate.now());
     }
 
     public List<String> getAllWorkersNames() {
@@ -144,11 +144,15 @@ public class TaskController {
         }
     }
 
-    public void addMemberToTeam(int teamNumber, String fio) {
+    public boolean addMemberToTeam(int teamNumber, String fio) {
         Team team = task.getTeams().get(teamNumber);
         Worker worker = getWorkerByFio(fio);
-        team.getMembers().add(worker);
-
+        if (team.getMembers().contains(worker)){
+            return false;
+        } else {
+            view.addWorkerToTeam(fio, teamNumber);
+            return team.getMembers().add(worker);
+        }
     }
 
     public void removeMemberFromTeam(int teamNumber, String fio) {
@@ -171,11 +175,11 @@ public class TaskController {
     }
 
     public void setTaskDate(LocalDate date) {
-        task.setData(date);
+        task.setDate(date);
     }
 
     public void setTeamTask(int teamNumber, String teamTask) {
-        task.getTeams().get(teamNumber).setTask(teamTask);
+        task.getTeams().get(teamNumber).setTeamTask(teamTask);
     }
 
     public void changeAuthor(String author) {

@@ -37,7 +37,7 @@ public class ExelCreator {
                 parentDir = blankFile.getAbsoluteFile().getParentFile();
                 createdFileNname = String.format("%s/Наряд на %s - %s.xlsx",
                         parentDir,
-                        task.getData().toString(),
+                        task.getDate().toString(),
                         translateShift(task.getShift()));
 
                 FileOutputStream fos = new FileOutputStream(createdFileNname);
@@ -71,7 +71,7 @@ public class ExelCreator {
     private void fillBlank(Workbook workbook, Task task) {
         Sheet sheet = workbook.getSheetAt(0);
 
-        fillHeaderDate(sheet, task.getData());
+        fillHeaderDate(sheet, task.getDate());
         fillHeaderShift(sheet, task.getShift());
         for (Team team : task.getTeams().values()){
             fillTeamLine(sheet, team);
@@ -128,8 +128,8 @@ public class ExelCreator {
             members.append(worker.getFio() + "\n", fontBold);
             members.append(worker.getProfession() + "\n");
         }
-        fillTwoCell(leftCell, row, members, team.getTask(), lbMulti);
-        fillTwoCell(rightCell, row, members, team.getTask(), lbMulti);
+        fillTwoCell(leftCell, row, members, team.getTeamTask(), lbMulti);
+        fillTwoCell(rightCell, row, members, team.getTeamTask(), lbMulti);
     }
 
     private void fillTwoCell(Cell cell, Row row, XSSFRichTextString members, String task, CellStyle style){

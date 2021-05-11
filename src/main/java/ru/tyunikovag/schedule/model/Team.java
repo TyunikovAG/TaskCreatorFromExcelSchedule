@@ -7,7 +7,7 @@ public class Team {
 
     private String teamNumber;
     private List<Worker> members = new ArrayList<>();
-    private String task;
+    private String teamTask;
 
 
     public Team(String teamNumber) {
@@ -16,7 +16,7 @@ public class Team {
 
     public Team(String teamNumber, String task) {
         this(teamNumber);
-        this.task = task;
+        this.teamTask = task;
     }
 
 
@@ -32,11 +32,11 @@ public class Team {
         return members;
     }
 
-    public String getTask() {
-        return task;
+    public String getTeamTask() {
+        return teamTask;
     }
 
-    public void setTask(String task) {
-        this.task = task;
+    public void setTeamTask(String teamTask) {
+        this.teamTask = teamTask;
     }
 }
