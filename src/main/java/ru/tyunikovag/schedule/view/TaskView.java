@@ -357,10 +357,9 @@ public class TaskView implements Initializable {
     }
 
     public void draggedMemberToTeam(DragEvent event) {
-        // TODO: 11.05.2021 ошибка - добавляет не в текущую бригаду, а в предыдущую
         String fio = event.getDragboard().getString();
         TextArea teamTaskArea = (TextArea) event.getSource();
-        int teamsCount = teamListBox.getChildren().size() - 1;
+        int teamsCount = teamListBox.getChildren().size();
         controller.addMemberToTeam(teamsCount, fio);
     }
 
