@@ -15,6 +15,7 @@ import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import ru.tyunikovag.schedule.controller.TaskController;
 import ru.tyunikovag.schedule.providers.DnDProvider;
@@ -139,6 +140,7 @@ public class TaskView implements Initializable {
 
     private Label createFioLabelForLeftBox(String fio) {
         Label label = new Label(fio);
+        label.setFont(Font.font(12));
         label.setOnDragDetected(DnDProvider::onLabelDragDetected);
         label.setOnMouseClicked(event -> onLeftBoxOnWorkerLabelClicked(event, label.getText()));
         return label;
@@ -353,7 +355,7 @@ public class TaskView implements Initializable {
         String fio = event.getDragboard().getString();
         addWorkerLabelToLeftBox(fio);
 
-        removeMemberFromTeam(event);
+        prepareToRemoveMemberFromTeam(event);
     }
 
     public void draggedMemberToTeam(DragEvent event) {
@@ -390,23 +392,42 @@ public class TaskView implements Initializable {
     private void onTeamMemberClicked(MouseEvent event, String fio) {
         if (event.getClickCount() == 2) {
             addWorkerLabelToLeftBox(fio);
-            removeMemberFromTeam(event);
+            prepareToRemoveMemberFromTeam(event);
         }
     }
 
+    public void setWorkerLeftColor(String fio, Paint color) {
+        leftBox.getChildren().stream()
+                .filter(node -> node.getClass().equals(Label.class))
+                .map(node -> (Label) node)
+                .filter(label -> label.getText().equals(fio))
+                .findFirst().get()
+                .setBackground(new Background(new BackgroundFill(color, null, null)));
+    }
+
     public void addWorkerToTeam(String fio, int teamNumber) {
-        // TODO: 11.05.2021 реаизовать заливку цветом в LeftBox
         VBox teamBox = (VBox) teamListBox.getChildren().get(teamNumber - 1);
         FlowPane members = (FlowPane) teamBox.getChildren().get(1);
         members.getChildren().add(createFioLabelForTeamMembers(fio));
     }
 
-    public void removeMemberFromTeam(InputEvent event) {
-        // TODO: 11.05.2021 проверить если его не осталось не в одной ригаде - снять заливку.
+    public void removeMemberFromTeam(String fio, int teamNumber) {
+        VBox teamBox = (VBox) teamListBox.getChildren().get(teamNumber - 1);
+        FlowPane members = (FlowPane) teamBox.getChildren().get(1);
+        members.getChildren().remove(
+                members.getChildren().stream()
+                        .filter(node -> node.getClass().equals(Label.class))
+                        .map(node -> (Label) node)
+                        .filter(label -> label.getText().equals(fio))
+                        .findFirst().get());
+    }
+
+    public void prepareToRemoveMemberFromTeam(InputEvent event) {
         Label dragSource = null;
         int teamNumber = 0;
         String fio = null;
         if (event.getClass().equals(DragEvent.class)) {
+            // перетянули из
             dragSource = (Label) ((DragEvent) event).getGestureSource();
             fio = ((DragEvent) event).getDragboard().getString();
         } else if (event.getClass().equals(MouseEvent.class)) {
@@ -416,8 +437,6 @@ public class TaskView implements Initializable {
         teamNumber = getTeamNumberFromId(dragSource.getParent().getParent().getId());
         assert dragSource != null;
         controller.removeMemberFromTeam(teamNumber, fio);
-
-        ((Pane) dragSource.getParent()).getChildren().remove(dragSource);
     }
 
     private int getTeamNumberFromId(String id) {

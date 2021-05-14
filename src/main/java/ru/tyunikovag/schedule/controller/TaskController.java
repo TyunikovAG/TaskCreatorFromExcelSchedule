@@ -1,6 +1,7 @@
 package ru.tyunikovag.schedule.controller;
 
 import javafx.application.Platform;
+import javafx.scene.paint.Color;
 import ru.tyunikovag.schedule.ExelCreator;
 import ru.tyunikovag.schedule.model.Shift;
 import ru.tyunikovag.schedule.model.Task;
@@ -128,6 +129,14 @@ public class TaskController {
         return workersOnTask.stream().anyMatch(w -> w.getFio().equals(worker.getFio()));
     }
 
+    private boolean isWorkersActiveInTask(Worker worker) {
+        boolean isActive = false;
+        for (Team team : task.getTeams().values()) {
+            isActive |= team.getMembers().contains(worker);
+        }
+        return isActive;
+    }
+
     private void checkForMe(Map<Worker, Map<Integer, Shift>> scheduleOfAllWorkers) {
         boolean toExit = true;
         for (Worker worker : scheduleOfAllWorkers.keySet()) {
@@ -151,6 +160,7 @@ public class TaskController {
             return false;
         } else {
             view.addWorkerToTeam(fio, teamNumber);
+            view.setWorkerLeftColor(fio, Color.LIGHTGREEN);
             return team.getMembers().add(worker);
         }
     }
@@ -159,6 +169,10 @@ public class TaskController {
         Team team = task.getTeams().get(teamNumber);
         Worker worker = getWorkerByFio(fio);
         team.getMembers().remove(worker);
+        view.removeMemberFromTeam(fio, teamNumber);
+        if (!isWorkersActiveInTask(worker)){
+            view.setWorkerLeftColor(fio, Color.LIGHTGRAY);
+        }
     }
 
     private Worker getWorkerByFio(String fio) {
