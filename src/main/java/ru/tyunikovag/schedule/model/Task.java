@@ -6,10 +6,10 @@ import java.util.Map;
 
 public class Task {
 
-    private Map<Integer, Team> teams = new HashMap<>();
     private LocalDate date;
-    private String author;
     private Shift shift;
+    private Map<Integer, Team> teams = new HashMap<>();
+    private String author;
 
     public Task() {
         author = "Семёнов И.П.";
