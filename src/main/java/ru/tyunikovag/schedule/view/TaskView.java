@@ -35,7 +35,7 @@ public class TaskView implements Initializable {
 
     private TaskController controller;
     private SettingController settingController;
-    private PropertyProvider propertyProvider = PropertyProvider.getInstance();
+    private final PropertyProvider propertyProvider = PropertyProvider.getInstance();
 
     @FXML
     private Label leftBoxDate;
@@ -179,14 +179,6 @@ public class TaskView implements Initializable {
         return null;
     }
 
-    private void deleteWorkersFromLeftBox() {
-//        leftBox.getChildren().clear();
-        List<Node> list = leftBox.getChildren();
-        while (list.size() > 1) {
-            list.remove(1);
-        }
-    }
-
     private void clearTeamListBox() {
         teamListBox.getChildren().clear();
     }
@@ -214,7 +206,6 @@ public class TaskView implements Initializable {
         teamTask.setWrapText(true);
         teamTask.setOnDragOver(DnDProvider::onTeamTaskAreaDragOver);
         teamTask.setOnDragDropped(DnDProvider::onTeamTaskAreaDragDropped);
-        teamTask.setOnMouseClicked(this::onTaskAreaClicked);
 
         teamBox.getChildren().addAll(topPane, teamMembersFlowPane, teamTask);
 
@@ -222,8 +213,8 @@ public class TaskView implements Initializable {
     }
 
     private ComboBox<String> getCmbTaskPatterns() {
-        ComboBox<String> patterns = new ComboBox<String>();
-        patterns.setItems(new ObservableListWrapper<String>(Arrays.asList(
+        ComboBox<String> patterns = new ComboBox<>();
+        patterns.setItems(new ObservableListWrapper<>(Arrays.asList(
                 "Осмотр ГВУ-3 согласно инструкции. Обслуживание насосных установок согласно инструкции по эксплуатации.\n",
                 "Осмотр насосной станции + 0 м. Контроль работы насосов.\n",
                 "Осмотр ГВКУ-1 согласно инструкции. Осмотр ЦПП-4.\n",
@@ -241,19 +232,6 @@ public class TaskView implements Initializable {
         VBox taskBox = (VBox) ((ComboBox) event.getTarget()).getParent().getParent();
         TextArea taskArea = (TextArea) taskBox.getChildren().get(2);
         taskArea.setText(taskArea.getText() + patterns.getValue());
-    }
-
-    private void onTaskAreaClicked(MouseEvent event) {
-        if (event.getClickCount() == 2) {
-//            final Stage dialog = new Stage();
-//            dialog.initModality(Modality.APPLICATION_MODAL);
-//            dialog.initOwner(null);
-//            VBox dialogVbox = new VBox(20);
-//            dialogVbox.getChildren().add(new Text("This is a Dialog"));
-//            Scene dialogScene = new Scene(dialogVbox, 300, 200);
-//            dialog.setScene(dialogScene);
-//            dialog.show();
-        }
     }
 
     @FXML
@@ -323,7 +301,7 @@ public class TaskView implements Initializable {
 
     public void addAnotherWorker(ActionEvent actionEvent) {
 
-        JComboBox jcb = new JComboBox(controller.getAllWorkersNames().toArray());
+        JComboBox<Object> jcb = new JComboBox<>(controller.getAllWorkersNames().toArray());
         jcb.setEditable(true);
         int dialogResult = JOptionPane.showConfirmDialog(null,
                 jcb,
@@ -362,33 +340,8 @@ public class TaskView implements Initializable {
 
     public void draggedMemberToTeam(DragEvent event) {
         String fio = event.getDragboard().getString();
-        TextArea teamTaskArea = (TextArea) event.getSource();
         int teamsCount = teamListBox.getChildren().size();
         controller.addMemberToTeam(teamsCount, fio);
-    }
-
-    private void removeMemberFromLeftBox(Object label) {
-        leftBox.getChildren().remove(label);
-    }
-
-    private void addMemberToTeam(String fio, VBox teamLocalTaskBox) {
-        if (teamLocalTaskBox == null) {
-            int teamsCount = teamListBox.getChildren().size() - 1;
-            teamLocalTaskBox = (VBox) (teamListBox.getChildren().get(teamsCount));
-        }
-        FlowPane teamMembers = (FlowPane) teamLocalTaskBox.getChildren().get(1);
-        int teamNumber = getTeamNumberFromId(teamLocalTaskBox.getId());
-        if (controller.addMemberToTeam(teamNumber, fio)) {
-            Label teamMember = new Label(fio);
-            teamMember.setFont(Font.font(16));
-            teamMember.setPadding(new Insets(0, 0, 10, 10));
-            teamMember.setOnDragDetected(DnDProvider::onLabelDragDetected);
-            teamMember.setOnMouseClicked(event -> onTeamMemberClicked(event, fio));
-
-            teamMembers.getChildren().add(teamMember);
-        }
-
-
     }
 
     private void onTeamMemberClicked(MouseEvent event, String fio) {
@@ -416,12 +369,12 @@ public class TaskView implements Initializable {
     public void removeMemberFromTeam(String fio, int teamNumber) {
         VBox teamBox = (VBox) teamListBox.getChildren().get(teamNumber - 1);
         FlowPane members = (FlowPane) teamBox.getChildren().get(1);
-        members.getChildren().remove(
-                members.getChildren().stream()
-                        .filter(node -> node.getClass().equals(Label.class))
-                        .map(node -> (Label) node)
-                        .filter(label -> label.getText().equals(fio))
-                        .findFirst().get());
+        Label label = members.getChildren().stream()
+                .filter(node -> node.getClass().equals(Label.class))
+                .map(node -> (Label) node)
+                .filter(lbl -> lbl.getText().equals(fio))
+                .findFirst().get();
+        members.getChildren().remove(label);
     }
 
     public void prepareToRemoveMemberFromTeam(InputEvent event) {
@@ -436,8 +389,8 @@ public class TaskView implements Initializable {
             dragSource = (Label) event.getSource();
             fio = dragSource.getText();
         }
-        teamNumber = getTeamNumberFromId(dragSource.getParent().getParent().getId());
         assert dragSource != null;
+        teamNumber = getTeamNumberFromId(dragSource.getParent().getParent().getId());
         controller.removeMemberFromTeam(teamNumber, fio);
     }
 
