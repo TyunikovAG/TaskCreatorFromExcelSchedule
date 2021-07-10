@@ -65,7 +65,9 @@ public class ExelProvider {
         int lastRow = sheet.getLastRowNum();
         for (int i = cornerRow + 7; i < lastRow; i++) {
             Row row = sheet.getRow(i);
-            if (row != null) {
+            if (row == null) {
+                break;
+            } else {
                 Cell cell = sheet.getRow(i).getCell(cornerColumn);
                 if (cell != null) {
                     if (sheet.getRow(i).getCell(cornerColumn).getCellType() == CellType.STRING) {
@@ -74,8 +76,6 @@ public class ExelProvider {
                         scheduleOfAllWorkers.put(worker, fillOneLine(cell.getRowIndex(), worker.getFio()));
                     }
                 }
-            } else {
-                break;
             }
         }
     }

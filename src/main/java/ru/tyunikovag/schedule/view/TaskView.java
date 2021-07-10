@@ -96,6 +96,7 @@ public class TaskView implements Initializable {
             clearTeamListBox();
             leftBox.getChildren().clear();
             controller.resetTask();
+            controller.readScheduleAndWorkers(datePicker.getValue());
             fillLeftBoxByWorkers(controller.getWorkersOnShift(datePicker.getValue().getDayOfMonth(), getSelectedShift()));
             controller.setShift(getSelectedShift());
             controller.setTaskDate(datePicker.getValue());

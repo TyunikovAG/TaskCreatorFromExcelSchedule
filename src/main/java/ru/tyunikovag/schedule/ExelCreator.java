@@ -30,22 +30,27 @@ public class ExelCreator {
     public void createTaskBlanks(Task task, String taskBlankFileName) {
 
         blankFile = new File(taskBlankFileName);
-        if (blankFile.exists()){
+        if (blankFile.exists()) {
             try {
-                Workbook workbook = new XSSFWorkbook(blankFile);
-                fillBlank(workbook, task);
-                parentDir = blankFile.getAbsoluteFile().getParentFile();
-                createdFileNname = String.format("%s/Наряд на %s - %s.xlsx",
-                        parentDir,
-                        task.getDate().toString(),
-                        translateShift(task.getShift()));
+                for (Team team : task.getTeams().values()) {
+                    Workbook workbook = new XSSFWorkbook(blankFile);
+                    fillBlank(workbook, task, team);
+                    parentDir = blankFile.getAbsoluteFile().getParentFile();
+                    createdFileNname = String.format("%s/Наряд на %s - %s(%s %s).xlsx",
+                            parentDir,
+                            task.getDate().toString(),
+                            translateShift(task.getShift()),
+                            team.getTeamNumber(),
+                            team.getMembers().get(0).getFio()
+                    );
 
-                FileOutputStream fos = new FileOutputStream(createdFileNname);
-                workbook.write(fos);
-                fos.close();
+                    FileOutputStream fos = new FileOutputStream(createdFileNname);
+                    workbook.write(fos);
+                    fos.close();
 
-                Desktop desktop = Desktop.getDesktop();
-                desktop.edit(new File(createdFileNname));
+                    Desktop desktop = Desktop.getDesktop();
+                    desktop.edit(new File(createdFileNname));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InvalidFormatException e) {
@@ -54,29 +59,29 @@ public class ExelCreator {
         }
     }
 
-    private String translateShift(Shift shift){
-        switch (shift){
-            case NIGHT:{
+    private String translateShift(Shift shift) {
+        switch (shift) {
+            case NIGHT: {
                 return "ночь";
-            } case MORNING: {
+            }
+            case MORNING: {
                 return "день";
-            } case EVENING: {
+            }
+            case EVENING: {
                 return "вечер";
-            } default: {
+            }
+            default: {
                 return "Error";
             }
         }
     }
 
-    private void fillBlank(Workbook workbook, Task task) {
+    private void fillBlank(Workbook workbook, Task task, Team team) {
         Sheet sheet = workbook.getSheetAt(0);
 
         fillHeaderDate(sheet, task.getDate());
         fillHeaderShift(sheet, task.getShift());
-        for (Team team : task.getTeams().values()){
-            fillTeamLine(sheet, team);
-            rowForTeam++;
-        }
+        fillTeamLine(sheet, team);
     }
 
     private void fillHeaderDate(Sheet sheet, LocalDate date) {
@@ -90,17 +95,19 @@ public class ExelCreator {
         rightCell.setCellValue(dateString);
     }
 
-    private void fillHeaderShift(Sheet sheet, Shift shift){
+    private void fillHeaderShift(Sheet sheet, Shift shift) {
         String shiftBlank = "Fatal error";
 
-        switch (shift){
+        switch (shift) {
             case NIGHT: {
                 shiftBlank = "СМЕНА   с      01.00 ч.    до      09.00  ч.";
                 break;
-            } case MORNING: {
+            }
+            case MORNING: {
                 shiftBlank = "СМЕНА   с      09.00 ч.    до      17.00  ч.";
                 break;
-            } case EVENING: {
+            }
+            case EVENING: {
                 shiftBlank = "СМЕНА   с      17.00 ч.    до      01.00  ч.";
             }
         }
@@ -110,10 +117,10 @@ public class ExelCreator {
         row.getCell(5).setCellValue(shiftBlank);
     }
 
-    private void fillTeamLine(Sheet sheet, Team team){
+    private void fillTeamLine(Sheet sheet, Team team) {
 
         CellStyle lbMulti = getLeftTopMultilineStyle(sheet.getWorkbook());
-        XSSFFont fontBold= (XSSFFont) sheet.getWorkbook().createFont();
+        XSSFFont fontBold = (XSSFFont) sheet.getWorkbook().createFont();
         fontBold.setBold(true); //set bold
         fontBold.setFontHeight(11); //add font size
 
@@ -121,10 +128,10 @@ public class ExelCreator {
         Cell leftCell = row.createCell(colLeftTeam);
         Cell rightCell = row.createCell(colRightTeam);
         XSSFRichTextString members = new XSSFRichTextString();
-        if (team.getMembers().size() > 1){
+        if (team.getMembers().size() > 1) {
             members.append("старший\n");
         }
-        for (Worker worker : team.getMembers()){
+        for (Worker worker : team.getMembers()) {
             members.append(worker.getFio() + "\n", fontBold);
             members.append(worker.getProfession() + "\n");
         }
@@ -132,7 +139,7 @@ public class ExelCreator {
         fillTwoCell(rightCell, row, members, team.getTeamTask(), lbMulti);
     }
 
-    private void fillTwoCell(Cell cell, Row row, XSSFRichTextString members, String task, CellStyle style){
+    private void fillTwoCell(Cell cell, Row row, XSSFRichTextString members, String task, CellStyle style) {
         cell.setCellValue(members);
         cell.setCellStyle(style);
         cell = row.createCell(cell.getColumnIndex() + 1);
@@ -140,7 +147,7 @@ public class ExelCreator {
         cell.setCellStyle(style);
     }
 
-    private CellStyle getLeftTopMultilineStyle(Workbook workbook){
+    private CellStyle getLeftTopMultilineStyle(Workbook workbook) {
         CellStyle cs = workbook.createCellStyle();
         cs.setWrapText(true);
         cs.setAlignment(HorizontalAlignment.LEFT);

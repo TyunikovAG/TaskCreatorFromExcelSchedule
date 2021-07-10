@@ -37,7 +37,7 @@ public class TaskController {
         initProperty();
         exelProvider = new ExelProvider();
         scheduleFile = new File(scheduleFileName);
-        readScheduleAndWorkers(LocalDate.now());
+//        readScheduleAndWorkers(LocalDate.now());
         view.setTaskAuthors(getAuthors());
         view.setLblFileName(scheduleFileName);
     }
@@ -57,7 +57,7 @@ public class TaskController {
         return propertyProvider.getAuthors();
     }
 
-    private void readScheduleAndWorkers(LocalDate localDate) {
+    public void readScheduleAndWorkers(LocalDate localDate) {
         scheduleOfAllWorkers = exelProvider.getScheduleOfAllWorkers(scheduleFile, localDate);
     }
 
