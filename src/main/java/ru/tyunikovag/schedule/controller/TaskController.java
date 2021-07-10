@@ -62,17 +62,6 @@ public class TaskController {
     }
 
     public List<Worker> getWorkersOnShift(int dayOfMonth, Shift shift) {
-//        ArrayList<Worker> workersOnShift = new ArrayList<>(10);
-//        for (Map.Entry<Worker, Map<Integer, Shift>> personMap : scheduleOfAllWorkers.entrySet()) {
-//            Map<Integer, Shift> schedule = personMap.getValue();
-//            Shift personShift = schedule.get(dayOfMonth);
-//            if (personShift != null) {
-//                if (personShift.equals(shift)) {
-//                    workersOnShift.add(personMap.getKey());
-//                }
-//            }
-//        }
-//        return workersOnShift;
         List<Worker> workersOnShiftList = scheduleOfAllWorkers.entrySet().stream()
                 .filter(entry -> entry.getValue().get(dayOfMonth) != null)
                 .filter(entry -> entry.getValue().get(dayOfMonth).equals(shift))
@@ -85,7 +74,6 @@ public class TaskController {
     public int addTeam() {
         int teamNumber = task.getTeams().size() + 1;
         task.getTeams().put(teamNumber, new Team(String.valueOf(teamNumber)));
-        // TODO: 14.03.2021 complete this
         return teamNumber;
     }
 

@@ -143,7 +143,7 @@ public class PropertyProvider {
         String author2 = properties.getProperty("author2");
         String author3 = properties.getProperty("author3");
         String author4 = properties.getProperty("author4");
-        return Arrays.asList(new String[]{author1, author2, author3, author4});
+        return Arrays.asList(author1, author2, author3, author4);
 //        return Arrays.asList("Семёнов И.П.", "Крамер А.В.");
     }
 

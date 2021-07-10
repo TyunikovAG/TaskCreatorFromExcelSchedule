@@ -17,14 +17,9 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-
-//        FXMLLoader loader = new FXMLLoader();
-//        loader.setLocation(Main.class.getResource("task.fxml"));
-        //Parent mainLayout = loader.load();
-
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("MainWindow.fxml"));
-//        Parent fxmlRoot = fxmlLoader.load(getClass().getClassLoader().getResource("MainWindow.fxml"));
         Parent fxmlRoot = fxmlLoader.load();
+
         MainView mainView = fxmlLoader.getController();
         TaskView view = mainView.getTaskView();
         Scene scene = new Scene(fxmlRoot);

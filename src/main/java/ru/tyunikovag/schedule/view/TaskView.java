@@ -225,7 +225,10 @@ public class TaskView implements Initializable {
         ComboBox<String> patterns = new ComboBox<String>();
         patterns.setItems(new ObservableListWrapper<String>(Arrays.asList(
                 "Осмотр ГВУ-3 согласно инструкции. Обслуживание насосных установок согласно инструкции по эксплуатации.\n",
+                "Осмотр насосной станции + 0 м. Контроль работы насосов.\n",
                 "Осмотр ГВКУ-1 согласно инструкции. Осмотр ЦПП-4.\n",
+                "Зачистка ЭТШ + 100 м. юг. Зачистка водосборников водоотлива + 100 м.",
+                "Зачистка ЭТШ + 0 м. юг. Зачистка водосборников водоотлива + 0 м.",
                 "Работы по заявкам. Устранение выявленных неисправностей в работе оборудования.\n"
         )));
         patterns.setMaxWidth(50);
@@ -269,7 +272,6 @@ public class TaskView implements Initializable {
 
     @FXML
     void onButtonSendToBlankAction(ActionEvent event) {
-        // TODO: 14.03.2021 replace this because task is in field
         boolean isFieldsEmpty = false;
         for (Node teamBox : teamListBox.getChildren()) {
             isFieldsEmpty |= isTeamBoxEmpty((VBox) teamBox);
@@ -456,9 +458,4 @@ public class TaskView implements Initializable {
         controller.changeAuthor((String) ((ComboBox) actionEvent.getSource()).getValue());
     }
 
-//    private static LocalDate NOW_LOCAL_DATE() {
-//        String date = new SimpleDateFormat("dd-MM-yyyy").format(Calendar.getInstance().getTime());
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-//        return LocalDate.parse(date, formatter);
-//    }
 }
